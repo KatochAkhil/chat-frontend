@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ai Chat — Real-Time Chat</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
+    rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            display: ['Sora', 'sans-serif'],
+            body: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            brand: {
+              indigo: '#6366F1',
+              blue: '#3B82F6',
+              purple: '#8B5CF6',
+            },
+            surface: '#F8FAFC',
+          },
+          boxShadow: {
+            glow: '0 8px 30px -8px rgba(99,102,241,0.35)',
+            card: '0 2px 12px -2px rgba(15,23,42,0.06), 0 1px 3px -1px rgba(15,23,42,0.04)',
+          },
+          animation: {
+            'gradient-x': 'gradient-x 8s ease infinite',
+            'float': 'float 6s ease-in-out infinite',
+            'pulse-ring': 'pulse-ring 2.2s cubic-bezier(0.4,0,0.6,1) infinite',
+            'shimmer': 'shimmer 2.5s linear infinite',
+            'fade-up': 'fade-up 0.5s ease both',
+          },
+          keyframes: {
+            'gradient-x': {
+              '0%,100%': { 'background-position': '0% 50%' },
+              '50%': { 'background-position': '100% 50%' },
+            },
+            'float': {
+              '0%,100%': { transform: 'translateY(0px)' },
+              '50%': { transform: 'translateY(-12px)' },
+            },
+            'pulse-ring': {
+              '0%': { transform: 'scale(0.9)', opacity: '0.7' },
+              '70%': { transform: 'scale(1.4)', opacity: '0' },
+              '100%': { transform: 'scale(1.4)', opacity: '0' },
+            },
+            'shimmer': {
+              '0%': { 'background-position': '-200% 0' },
+              '100%': { 'background-position': '200% 0' },
+            },
+            'fade-up': {
+              '0%': { opacity: '0', transform: 'translateY(8px)' },
+              '100%': { opacity: '1', transform: 'translateY(0)' },
+            },
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+
+    .font-display {
+      font-family: 'Sora', sans-serif;
+    }
+
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgba(99, 102, 241, 0.25);
+      border-radius: 999px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(99, 102, 241, 0.45);
+    }
+
+    .glass {
+      background: rgba(255, 255, 255, 0.72);
+      backdrop-filter: blur(16px) saturate(160%);
+      -webkit-backdrop-filter: blur(16px) saturate(160%);
+      border: 1px solid rgba(255, 255, 255, 0.6);
+    }
+
+    .dark .glass {
+      background: rgba(15, 23, 42, 0.65);
+      border: 1px solid rgba(148, 163, 184, 0.12);
+    }
+
+    .mesh-bg {
+      background:
+        radial-gradient(at 15% 20%, rgba(99, 102, 241, 0.35) 0px, transparent 50%),
+        radial-gradient(at 85% 15%, rgba(139, 92, 246, 0.35) 0px, transparent 50%),
+        radial-gradient(at 50% 85%, rgba(59, 130, 246, 0.3) 0px, transparent 50%),
+        #0B1020;
+    }
+
+    .grad-text {
+      background: linear-gradient(90deg, #6366F1, #8B5CF6, #3B82F6);
+      background-size: 200% auto;
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      animation: gradient-x 6s ease infinite;
+    }
+
+    .shimmer-border {
+      position: relative;
+      background: linear-gradient(90deg, rgba(245, 158, 11, 0.0), rgba(245, 158, 11, 0.5), rgba(245, 158, 11, 0.0));
+      background-size: 200% 100%;
+      animation: shimmer 3s linear infinite;
+    }
+
+    .skeleton {
+      background: linear-gradient(90deg, rgba(148, 163, 184, 0.15) 25%, rgba(148, 163, 184, 0.3) 37%, rgba(148, 163, 184, 0.15) 63%);
+      background-size: 400% 100%;
+      animation: shimmer 1.6s ease infinite;
+    }
+
+    .page-section {
+      display: none;
+    }
+
+    .page-section.active {
+      display: flex;
+    }
+
+    .scrollbar-thin::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .ai-ring::before {
+      content: '';
+      position: absolute;
+      inset: -4px;
+      border-radius: 9999px;
+      background: linear-gradient(135deg, #6366F1, #8B5CF6, #3B82F6);
+      opacity: 0.55;
+      animation: pulse-ring 2.2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+
+    textarea:focus,
+    input:focus {
+      outline: none;
+    }
+
+    .fade-up {
+      animation: fade-up 0.45s ease both;
+    }
+  </style>
+</head>
+
+<body class="font-body bg-surface dark:bg-slate-950 text-slate-800 dark:text-slate-100 transition-colors duration-300">
+
+  <!-- ============================================================ -->
+  <!-- 1. LOGIN SCREEN -->
+  <!-- ============================================================ -->
+  <section id="page-login"
+    class="page-section active min-h-screen w-full mesh-bg items-center justify-center p-6 relative overflow-hidden">
+    <div class="absolute top-1/4 -left-20 w-72 h-72 bg-brand-indigo/30 rounded-full blur-3xl animate-float"></div>
+    <div class="absolute bottom-10 right-0 w-96 h-96 bg-brand-purple/30 rounded-full blur-3xl animate-float"
+      style="animation-delay:1.5s"></div>
+
+    <button onclick="toggleDark()"
+      class="absolute top-6 right-6 w-10 h-10 rounded-full glass flex items-center justify-center text-white/80 hover:text-white transition">
+      <i class="fa-solid fa-moon text-sm"></i>
+    </button>
+
+    <div class="relative w-full max-w-md glass rounded-3xl shadow-2xl p-10 fade-up">
+      <div class="flex flex-col items-center text-center">
+        <div class="relative mb-6">
+          <div
+            class="w-16 h-16 rounded-2xl bg-gradient-to-br from-brand-indigo via-brand-purple to-brand-blue flex items-center justify-center shadow-glow">
+            <i class="fa-solid fa-sparkles text-white text-2xl"></i>
+          </div>
+        </div>
+        <h1 class="font-display text-2xl font-bold text-white">Welcome to Ai Chat</h1>
+        <p class="text-slate-300 text-sm mt-2 leading-relaxed">Your real-time workspace for human &amp; AI conversation
+          — synced across every device, in one calm inbox.</p>
+
+        <button onclick="goTo('dashboard')"
+          class="mt-8 w-full bg-white hover:bg-slate-50 text-slate-800 font-medium py-3.5 rounded-xl flex items-center justify-center gap-3 shadow-lg transition active:scale-[0.98]">
+          <svg class="w-5 h-5" viewBox="0 0 48 48">
+            <path fill="#FFC107"
+              d="M43.6 20.1H42V20H24v8h11.3c-1.6 4.7-6.1 8-11.3 8-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.1 8 3l5.7-5.7C34.6 6.1 29.6 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.7-.4-3.9z" />
+            <path fill="#FF3D00"
+              d="M6.3 14.7l6.6 4.8C14.6 15.9 18.9 13 24 13c3.1 0 5.9 1.1 8 3l5.7-5.7C34.6 6.1 29.6 4 24 4c-7.7 0-14.3 4.4-17.7 10.7z" />
+            <path fill="#4CAF50"
+              d="M24 44c5.5 0 10.4-1.9 14.2-5.1l-6.6-5.5C29.6 35.1 26.9 36 24 36c-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.6 39.5 16.2 44 24 44z" />
+            <path fill="#1976D2"
+              d="M43.6 20.1H42V20H24v8h11.3c-.8 2.3-2.2 4.2-4.1 5.6l6.6 5.5C39.8 37 44 31 44 24c0-1.3-.1-2.7-.4-3.9z" />
+          </svg>
+          Continue with Google
+        </button>
+
+        <p class="text-xs text-slate-400 mt-6 leading-relaxed">
+          By continuing, you agree to Ai Chat's
+          <a href="#" class="text-brand-purple hover:underline">Terms of Service</a> and
+          <a href="#" class="text-brand-purple hover:underline">Privacy Policy</a>.
+        </p>
+      </div>
+    </div>
+    <p class="absolute bottom-6 text-slate-500 text-xs">v2.4.0 · Ai Chat © 2026</p>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- 2. MAIN DASHBOARD -->
+  <!-- ============================================================ -->
+  <section id="page-dashboard" class="page-section min-h-screen w-full bg-surface dark:bg-slate-950">
+    <div class="flex h-screen w-full overflow-hidden">
+
+      <!-- ============ LEFT SIDEBAR ============ -->
+      <aside
+        class="hidden lg:flex flex-col w-72 shrink-0 bg-white/80 dark:bg-slate-900/80 border-r border-slate-200/70 dark:border-slate-800 backdrop-blur-xl">
+        <div class="flex items-center gap-3 px-6 py-5 border-b border-slate-100 dark:border-slate-800">
+          <div
+            class="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-indigo via-brand-purple to-brand-blue flex items-center justify-center shadow-glow">
+            <i class="fa-solid fa-sparkles text-white text-sm"></i>
+          </div>
+          <span class="font-display font-bold text-lg">Nexus <span class="grad-text">AI</span></span>
+        </div>
+
+        <div class="px-4 py-4 border-b border-slate-100 dark:border-slate-800">
+          <div
+            class="flex items-center gap-3 p-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/60 transition cursor-pointer">
+            <div class="relative">
+              <img src="https://i.pravatar.cc/80?img=32"
+                class="w-10 h-10 rounded-full object-cover ring-2 ring-white dark:ring-slate-900" />
+              <span
+                class="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 rounded-full ring-2 ring-white dark:ring-slate-900"></span>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-semibold truncate">Aarav Mehta</p>
+              <span
+                class="inline-flex items-center gap-1 text-[10px] font-semibold text-amber-600 bg-amber-50 dark:bg-amber-500/10 px-1.5 py-0.5 rounded-md">
+                <i class="fa-solid fa-crown"></i> PREMIUM
+              </span>
+            </div>
+            <i class="fa-solid fa-chevron-down text-xs text-slate-400"></i>
+          </div>
+        </div>
+
+        <nav class="flex-1 px-4 py-4 space-y-1 overflow-y-auto">
+          <p class="px-2.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-2">Workspace</p>
+          <a href="#"
+            class="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-gradient-to-r from-brand-indigo/10 to-brand-purple/10 text-brand-indigo dark:text-indigo-300 font-medium text-sm">
+            <i class="fa-solid fa-comments w-4"></i> Chat
+            <span class="ml-auto text-[10px] bg-brand-indigo text-white rounded-full px-1.5 py-0.5">3</span>
+          </a>
+          <a href="#"
+            class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition text-sm font-medium">
+            <i class="fa-solid fa-wand-magic-sparkles w-4"></i> AI Features
+          </a>
+          <a href="#" onclick="openModal('payment-modal')"
+            class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition text-sm font-medium">
+            <i class="fa-solid fa-crown w-4 text-amber-500"></i> Premium
+          </a>
+          <a href="#"
+            class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition text-sm font-medium">
+            <i class="fa-solid fa-gear w-4"></i> Settings
+          </a>
+
+          <p class="px-2.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400 mt-6 mb-2">Explore states
+          </p>
+          <a href="#" onclick="goTo('empty')"
+            class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition text-sm">
+            <i class="fa-regular fa-comment-dots w-4"></i> Empty state
+          </a>
+          <a href="#" onclick="goTo('loading')"
+            class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition text-sm">
+            <i class="fa-solid fa-spinner w-4"></i> Loading state
+          </a>
+          <a href="#" onclick="goTo('notfound')"
+            class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition text-sm">
+            <i class="fa-solid fa-triangle-exclamation w-4"></i> 404 state
+          </a>
+        </nav>
+
+        <div class="p-4 border-t border-slate-100 dark:border-slate-800 space-y-3">
+          <button onclick="toggleDark()"
+            class="w-full flex items-center justify-between px-3 py-2 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition">
+            <span class="flex items-center gap-2"><i class="fa-solid fa-circle-half-stroke w-4"></i> Dark mode</span>
+            <span class="w-9 h-5 bg-slate-200 dark:bg-brand-indigo rounded-full relative transition">
+              <span
+                class="absolute top-0.5 left-0.5 dark:left-4 w-4 h-4 bg-white rounded-full transition-all shadow"></span>
+            </span>
+          </button>
+          <button onclick="goTo('login')"
+            class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition text-sm font-medium">
+            <i class="fa-solid fa-arrow-right-from-bracket w-4"></i> Logout
+          </button>
+        </div>
+      </aside>
+
+      <!-- ============ CENTER: HEADER + CHAT ============ -->
+      <div class="flex-1 flex flex-col min-w-0">
+
+        <!-- TOP HEADER -->
+        <header
+          class="h-16 shrink-0 flex items-center justify-between px-5 lg:px-6 border-b border-slate-200/70 dark:border-slate-800 bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl">
+          <div class="flex items-center gap-3 min-w-0">
+            <button
+              class="lg:hidden w-9 h-9 rounded-lg flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800"><i
+                class="fa-solid fa-bars"></i></button>
+            <div
+              class="w-9 h-9 rounded-full bg-gradient-to-br from-brand-indigo to-brand-purple flex items-center justify-center text-white text-xs font-bold shrink-0">
+              #</div>
+            <div class="min-w-0">
+              <p class="font-semibold text-sm truncate"># product-design-sync</p>
+              <p class="text-xs text-slate-400 flex items-center gap-1">
+                <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span> 8 online
+              </p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2 lg:gap-3">
+            <div class="hidden md:flex -space-x-2 mr-2">
+              <img src="https://i.pravatar.cc/60?img=12"
+                class="w-7 h-7 rounded-full ring-2 ring-white dark:ring-slate-900" />
+              <img src="https://i.pravatar.cc/60?img=45"
+                class="w-7 h-7 rounded-full ring-2 ring-white dark:ring-slate-900" />
+              <img src="https://i.pravatar.cc/60?img=8"
+                class="w-7 h-7 rounded-full ring-2 ring-white dark:ring-slate-900" />
+              <div
+                class="w-7 h-7 rounded-full ring-2 ring-white dark:ring-slate-900 bg-slate-200 dark:bg-slate-700 text-[10px] flex items-center justify-center font-semibold">
+                +5</div>
+            </div>
+            <button
+              class="relative w-9 h-9 rounded-lg flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+              <i class="fa-regular fa-bell"></i>
+              <span
+                class="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white dark:ring-slate-900"></span>
+            </button>
+            <button onclick="toggleAiPanel()"
+              class="xl:hidden w-9 h-9 rounded-lg flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+              <i class="fa-solid fa-wand-magic-sparkles"></i>
+            </button>
+            <img src="https://i.pravatar.cc/80?img=32"
+              class="w-9 h-9 rounded-full object-cover ring-2 ring-white dark:ring-slate-900" />
+          </div>
+        </header>
+
+        <!-- CHAT MESSAGES -->
+        <main id="chat-scroll" class="flex-1 overflow-y-auto px-4 lg:px-8 py-6 space-y-5 scrollbar-thin">
+
+          <div class="flex justify-center">
+            <span
+              class="text-[11px] font-medium text-slate-400 bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-full">Today</span>
+          </div>
+
+          <!-- msg 1 - other user -->
+          <div class="flex gap-3 max-w-2xl fade-up">
+            <img src="https://i.pravatar.cc/60?img=12" class="w-9 h-9 rounded-full mt-0.5" />
+            <div>
+              <div class="flex items-baseline gap-2"><span class="font-semibold text-sm">Priya Sharma</span><span
+                  class="text-[11px] text-slate-400">9:02 AM</span></div>
+              <div
+                class="mt-1 bg-white dark:bg-slate-800 rounded-2xl rounded-tl-sm px-4 py-2.5 shadow-card text-sm leading-relaxed">
+                Morning! Did we finalize the color tokens for the new dashboard?</div>
+            </div>
+          </div>
+
+          <!-- msg 2 - other -->
+          <div class="flex gap-3 max-w-2xl fade-up">
+            <img src="https://i.pravatar.cc/60?img=45" class="w-9 h-9 rounded-full mt-0.5" />
+            <div>
+              <div class="flex items-baseline gap-2"><span class="font-semibold text-sm">Devon Wu</span><span
+                  class="text-[11px] text-slate-400">9:04 AM</span></div>
+              <div
+                class="mt-1 bg-white dark:bg-slate-800 rounded-2xl rounded-tl-sm px-4 py-2.5 shadow-card text-sm leading-relaxed">
+                Almost — indigo/purple/blue primary, emerald for success states 👍</div>
+            </div>
+          </div>
+
+          <!-- msg 3 - AI -->
+          <div class="flex gap-3 max-w-2xl fade-up">
+            <div class="relative w-9 h-9 shrink-0 mt-0.5">
+              <div class="ai-ring absolute inset-0"></div>
+              <div
+                class="relative w-9 h-9 rounded-full bg-gradient-to-br from-brand-indigo via-brand-purple to-brand-blue flex items-center justify-center">
+                <i class="fa-solid fa-sparkles text-white text-xs"></i></div>
+            </div>
+            <div>
+              <div class="flex items-baseline gap-2"><span class="font-semibold text-sm">Ai Chat</span><span
+                  class="text-[10px] font-semibold text-brand-purple bg-brand-purple/10 px-1.5 py-0.5 rounded">ASSISTANT</span><span
+                  class="text-[11px] text-slate-400">9:05 AM</span></div>
+              <div
+                class="mt-1 bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-500/10 dark:to-purple-500/10 border border-indigo-100 dark:border-indigo-500/20 rounded-2xl rounded-tl-sm px-4 py-2.5 shadow-card text-sm leading-relaxed">
+                Here's the confirmed palette based on the last thread — I can generate the Tailwind config if that
+                helps.</div>
+            </div>
+          </div>
+
+          <!-- msg 4 - user (me) - multiline -->
+          <div class="flex gap-3 max-w-2xl ml-auto flex-row-reverse fade-up">
+            <img src="https://i.pravatar.cc/80?img=32" class="w-9 h-9 rounded-full mt-0.5" />
+            <div class="items-end flex flex-col">
+              <div class="flex items-baseline gap-2 flex-row-reverse"><span
+                  class="font-semibold text-sm">You</span><span class="text-[11px] text-slate-400">9:07 AM</span></div>
+              <div
+                class="mt-1 bg-gradient-to-br from-brand-indigo to-brand-purple text-white rounded-2xl rounded-tr-sm px-4 py-2.5 shadow-glow text-sm leading-relaxed max-w-md">
+                Yes please generate it.<br />
+                Also — can we lock border radius at 12px across cards,<br />
+                and keep the shadows subtle for light mode?
+              </div>
+              <span class="text-[10px] text-slate-400 mt-1 flex items-center gap-1"><i
+                  class="fa-solid fa-check-double text-brand-blue"></i> Read 9:08 AM</span>
+            </div>
+          </div>
+
+          <!-- msg 5 - AI code block -->
+          <div class="flex gap-3 max-w-2xl fade-up">
+            <div class="relative w-9 h-9 shrink-0 mt-0.5">
+              <div
+                class="relative w-9 h-9 rounded-full bg-gradient-to-br from-brand-indigo via-brand-purple to-brand-blue flex items-center justify-center">
+                <i class="fa-solid fa-sparkles text-white text-xs"></i></div>
+            </div>
+            <div class="max-w-lg w-full">
+              <div class="flex items-baseline gap-2"><span class="font-semibold text-sm">Ai Chat</span><span
+                  class="text-[11px] text-slate-400">9:09 AM</span></div>
+              <div class="mt-1 bg-slate-900 dark:bg-black rounded-2xl rounded-tl-sm shadow-card overflow-hidden">
+                <div class="flex items-center justify-between px-4 py-2 border-b border-white/10">
+                  <span class="text-[11px] text-slate-400 font-mono">tailwind.config.js</span>
+                  <button class="text-[11px] text-slate-400 hover:text-white transition"><i
+                      class="fa-regular fa-copy"></i> Copy</button>
+                </div>
+                <pre class="p-4 text-[12.5px] font-mono text-slate-200 overflow-x-auto leading-relaxed"><span class="text-purple-400">colors</span>: {
+  <span class="text-blue-300">brand</span>: {
+    <span class="text-emerald-300">indigo</span>: <span class="text-amber-300">'#6366F1'</span>,
+    <span class="text-emerald-300">purple</span>: <span class="text-amber-300">'#8B5CF6'</span>,
+    <span class="text-emerald-300">blue</span>: <span class="text-amber-300">'#3B82F6'</span>,
+  }
+}</pre>
+              </div>
+            </div>
+          </div>
+
+          <!-- msg 6 - other markdown -->
+          <div class="flex gap-3 max-w-2xl fade-up">
+            <img src="https://i.pravatar.cc/60?img=8" class="w-9 h-9 rounded-full mt-0.5" />
+            <div>
+              <div class="flex items-baseline gap-2"><span class="font-semibold text-sm">Lina Torres</span><span
+                  class="text-[11px] text-slate-400">9:12 AM</span></div>
+              <div
+                class="mt-1 bg-white dark:bg-slate-800 rounded-2xl rounded-tl-sm px-4 py-2.5 shadow-card text-sm leading-relaxed">
+                <p class="font-semibold mb-1">Checklist before the demo:</p>
+                <ul class="list-disc list-inside space-y-0.5 text-slate-600 dark:text-slate-300">
+                  <li>Radius tokens applied</li>
+                  <li>Dark mode contrast pass</li>
+                  <li><em>Skeleton</em> loaders wired up</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- msg 7 - user emoji -->
+          <div class="flex gap-3 max-w-2xl ml-auto flex-row-reverse fade-up">
+            <img src="https://i.pravatar.cc/80?img=32" class="w-9 h-9 rounded-full mt-0.5" />
+            <div class="items-end flex flex-col">
+              <div class="flex items-baseline gap-2 flex-row-reverse"><span
+                  class="font-semibold text-sm">You</span><span class="text-[11px] text-slate-400">9:13 AM</span></div>
+              <div
+                class="mt-1 bg-gradient-to-br from-brand-indigo to-brand-purple text-white rounded-2xl rounded-tr-sm px-4 py-2.5 shadow-glow text-sm">
+                On it 🔥🚀 let's ship this today 🎉</div>
+            </div>
+          </div>
+
+          <!-- msg 8 - other -->
+          <div class="flex gap-3 max-w-2xl fade-up">
+            <img src="https://i.pravatar.cc/60?img=45" class="w-9 h-9 rounded-full mt-0.5" />
+            <div>
+              <div class="flex items-baseline gap-2"><span class="font-semibold text-sm">Devon Wu</span><span
+                  class="text-[11px] text-slate-400">9:15 AM</span></div>
+              <div
+                class="mt-1 bg-white dark:bg-slate-800 rounded-2xl rounded-tl-sm px-4 py-2.5 shadow-card text-sm leading-relaxed">
+                Pushed the skeleton components to the branch, review when free 🙏</div>
+            </div>
+          </div>
+
+          <!-- msg 9 - AI suggestion chip -->
+          <div class="flex gap-3 max-w-2xl fade-up">
+            <div class="relative w-9 h-9 shrink-0 mt-0.5">
+              <div
+                class="w-9 h-9 rounded-full bg-gradient-to-br from-brand-indigo via-brand-purple to-brand-blue flex items-center justify-center">
+                <i class="fa-solid fa-sparkles text-white text-xs"></i></div>
+            </div>
+            <div>
+              <div class="flex items-baseline gap-2"><span class="font-semibold text-sm">Ai Chat</span><span
+                  class="text-[11px] text-slate-400">9:16 AM</span></div>
+              <div
+                class="mt-1 bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-500/10 dark:to-purple-500/10 border border-indigo-100 dark:border-indigo-500/20 rounded-2xl rounded-tl-sm px-4 py-2.5 shadow-card text-sm leading-relaxed">
+                I noticed 3 open threads about spacing — want me to summarize the whole channel?</div>
+            </div>
+          </div>
+
+          <!-- msg 10 - other -->
+          <div class="flex gap-3 max-w-2xl fade-up">
+            <img src="https://i.pravatar.cc/60?img=12" class="w-9 h-9 rounded-full mt-0.5" />
+            <div>
+              <div class="flex items-baseline gap-2"><span class="font-semibold text-sm">Priya Sharma</span><span
+                  class="text-[11px] text-slate-400">9:18 AM</span></div>
+              <div
+                class="mt-1 bg-white dark:bg-slate-800 rounded-2xl rounded-tl-sm px-4 py-2.5 shadow-card text-sm leading-relaxed">
+                Yes please, that'd save us a lot of scrolling 😅</div>
+            </div>
+          </div>
+
+          <!-- msg 11 - user -->
+          <div class="flex gap-3 max-w-2xl ml-auto flex-row-reverse fade-up">
+            <img src="https://i.pravatar.cc/80?img=32" class="w-9 h-9 rounded-full mt-0.5" />
+            <div class="items-end flex flex-col">
+              <div class="flex items-baseline gap-2 flex-row-reverse"><span
+                  class="font-semibold text-sm">You</span><span class="text-[11px] text-slate-400">9:20 AM</span></div>
+              <div
+                class="mt-1 bg-gradient-to-br from-brand-indigo to-brand-purple text-white rounded-2xl rounded-tr-sm px-4 py-2.5 shadow-glow text-sm leading-relaxed">
+                Check the AI panel on the right, it already generated one →</div>
+              <span class="text-[10px] text-slate-400 mt-1 flex items-center gap-1"><i
+                  class="fa-solid fa-check-double text-brand-blue"></i> Read 9:21 AM</span>
+            </div>
+          </div>
+
+          <!-- msg 12 - other -->
+          <div class="flex gap-3 max-w-2xl fade-up">
+            <img src="https://i.pravatar.cc/60?img=8" class="w-9 h-9 rounded-full mt-0.5" />
+            <div>
+              <div class="flex items-baseline gap-2"><span class="font-semibold text-sm">Lina Torres</span><span
+                  class="text-[11px] text-slate-400">9:22 AM</span></div>
+              <div
+                class="mt-1 bg-white dark:bg-slate-800 rounded-2xl rounded-tl-sm px-4 py-2.5 shadow-card text-sm leading-relaxed">
+                Nice, upgrading to Premium was worth it just for that honestly.</div>
+            </div>
+          </div>
+
+          <!-- msg 13 - other -->
+          <div class="flex gap-3 max-w-2xl fade-up">
+            <img src="https://i.pravatar.cc/60?img=45" class="w-9 h-9 rounded-full mt-0.5" />
+            <div>
+              <div class="flex items-baseline gap-2"><span class="font-semibold text-sm">Devon Wu</span><span
+                  class="text-[11px] text-slate-400">9:24 AM</span></div>
+              <div
+                class="mt-1 bg-white dark:bg-slate-800 rounded-2xl rounded-tl-sm px-4 py-2.5 shadow-card text-sm leading-relaxed">
+                Meeting moved to 11:15, invite incoming.</div>
+            </div>
+          </div>
+
+          <!-- msg 14 - user -->
+          <div class="flex gap-3 max-w-2xl ml-auto flex-row-reverse fade-up">
+            <img src="https://i.pravatar.cc/80?img=32" class="w-9 h-9 rounded-full mt-0.5" />
+            <div class="items-end flex flex-col">
+              <div class="flex items-baseline gap-2 flex-row-reverse"><span
+                  class="font-semibold text-sm">You</span><span class="text-[11px] text-slate-400">9:25 AM</span></div>
+              <div
+                class="mt-1 bg-gradient-to-br from-brand-indigo to-brand-purple text-white rounded-2xl rounded-tr-sm px-4 py-2.5 shadow-glow text-sm">
+                Got it, see you all there 👋</div>
+              <span class="text-[10px] text-slate-400 mt-1 flex items-center gap-1"><i
+                  class="fa-solid fa-check text-slate-400"></i> Sent 9:25 AM</span>
+            </div>
+          </div>
+
+          <!-- msg 15 - AI typing -->
+          <div class="flex gap-3 max-w-2xl fade-up">
+            <div class="relative w-9 h-9 shrink-0 mt-0.5">
+              <div
+                class="w-9 h-9 rounded-full bg-gradient-to-br from-brand-indigo via-brand-purple to-brand-blue flex items-center justify-center">
+                <i class="fa-solid fa-sparkles text-white text-xs"></i></div>
+            </div>
+            <div>
+              <div class="flex items-baseline gap-2"><span class="font-semibold text-sm">Ai Chat</span><span
+                  class="text-[11px] text-slate-400">typing…</span></div>
+              <div
+                class="mt-1 bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-500/10 dark:to-purple-500/10 border border-indigo-100 dark:border-indigo-500/20 rounded-2xl rounded-tl-sm px-4 py-3 shadow-card flex gap-1 w-fit">
+                <span class="w-1.5 h-1.5 bg-brand-purple rounded-full animate-bounce"
+                  style="animation-delay:0ms"></span>
+                <span class="w-1.5 h-1.5 bg-brand-purple rounded-full animate-bounce"
+                  style="animation-delay:150ms"></span>
+                <span class="w-1.5 h-1.5 bg-brand-purple rounded-full animate-bounce"
+                  style="animation-delay:300ms"></span>
+              </div>
+            </div>
+          </div>
+        </main>
+
+        <!-- MESSAGE INPUT -->
+        <div
+          class="shrink-0 border-t border-slate-200/70 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl p-4 lg:px-8">
+          <div
+            class="flex items-end gap-2 bg-slate-50 dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 focus-within:ring-2 focus-within:ring-brand-indigo/40 focus-within:border-brand-indigo/50 transition p-2">
+            <button
+              class="w-9 h-9 rounded-xl flex items-center justify-center text-slate-400 hover:text-brand-indigo hover:bg-white dark:hover:bg-slate-700 transition shrink-0"><i
+                class="fa-regular fa-face-smile"></i></button>
+            <button
+              class="w-9 h-9 rounded-xl flex items-center justify-center text-slate-400 hover:text-brand-indigo hover:bg-white dark:hover:bg-slate-700 transition shrink-0"><i
+                class="fa-solid fa-paperclip"></i></button>
+            <textarea rows="1" placeholder="Message #product-design-sync…"
+              class="flex-1 bg-transparent resize-none py-2 px-1 text-sm placeholder:text-slate-400 max-h-32"></textarea>
+            <button
+              class="w-9 h-9 rounded-xl flex items-center justify-center text-slate-400 hover:text-brand-indigo hover:bg-white dark:hover:bg-slate-700 transition shrink-0"><i
+                class="fa-solid fa-microphone"></i></button>
+            <button
+              class="hidden sm:flex items-center gap-1.5 px-3 h-9 rounded-xl text-xs font-semibold text-brand-purple bg-brand-purple/10 hover:bg-brand-purple/20 transition shrink-0">
+              <i class="fa-solid fa-wand-magic-sparkles"></i> AI Suggest
+            </button>
+            <button
+              class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-indigo to-brand-purple text-white flex items-center justify-center shadow-glow hover:scale-105 active:scale-95 transition shrink-0">
+              <i class="fa-solid fa-paper-plane text-sm"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ 3. AI ASSISTANT PANEL ============ -->
+      <aside id="ai-panel"
+        class="hidden xl:flex flex-col w-80 shrink-0 bg-white/80 dark:bg-slate-900/80 border-l border-slate-200/70 dark:border-slate-800 backdrop-blur-xl overflow-y-auto">
+        <div class="p-5 space-y-6">
+
+          <div class="flex items-center justify-between">
+            <h3 class="font-display font-bold text-sm flex items-center gap-2"><i
+                class="fa-solid fa-wand-magic-sparkles text-brand-purple"></i> AI Assistant</h3>
+            <button onclick="toggleAiPanel()"
+              class="xl:hidden w-7 h-7 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-center"><i
+                class="fa-solid fa-xmark text-xs"></i></button>
+          </div>
+
+          <!-- Suggested Replies -->
+          <div>
+            <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-3">Suggested replies</p>
+            <div class="space-y-2.5">
+              <div
+                class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200/70 dark:border-slate-700">
+                <p class="text-xs leading-relaxed text-slate-600 dark:text-slate-300">"Sounds good — I'll update the
+                  Figma file and ping the channel once it's live."</p>
+                <div class="flex gap-2 mt-2">
+                  <button
+                    class="text-[11px] font-medium text-slate-500 hover:text-brand-indigo flex items-center gap-1"><i
+                      class="fa-regular fa-copy"></i> Copy</button>
+                  <button class="text-[11px] font-medium text-brand-indigo hover:underline flex items-center gap-1"><i
+                      class="fa-solid fa-arrow-turn-up rotate-90"></i> Use</button>
+                </div>
+              </div>
+              <div
+                class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200/70 dark:border-slate-700">
+                <p class="text-xs leading-relaxed text-slate-600 dark:text-slate-300">"Can we push this to Thursday? I
+                  want to test on dark mode first."</p>
+                <div class="flex gap-2 mt-2">
+                  <button
+                    class="text-[11px] font-medium text-slate-500 hover:text-brand-indigo flex items-center gap-1"><i
+                      class="fa-regular fa-copy"></i> Copy</button>
+                  <button class="text-[11px] font-medium text-brand-indigo hover:underline flex items-center gap-1"><i
+                      class="fa-solid fa-arrow-turn-up rotate-90"></i> Use</button>
+                </div>
+              </div>
+              <div
+                class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200/70 dark:border-slate-700">
+                <p class="text-xs leading-relaxed text-slate-600 dark:text-slate-300">"👍 Approved — nice work team,
+                  this is ready to ship."</p>
+                <div class="flex gap-2 mt-2">
+                  <button
+                    class="text-[11px] font-medium text-slate-500 hover:text-brand-indigo flex items-center gap-1"><i
+                      class="fa-regular fa-copy"></i> Copy</button>
+                  <button class="text-[11px] font-medium text-brand-indigo hover:underline flex items-center gap-1"><i
+                      class="fa-solid fa-arrow-turn-up rotate-90"></i> Use</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Chat Summary -->
+          <div
+            class="p-4 rounded-2xl bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-500/10 dark:to-purple-500/10 border border-indigo-100 dark:border-indigo-500/20">
+            <p class="text-xs font-semibold flex items-center gap-1.5 mb-1.5"><i
+                class="fa-solid fa-file-lines text-brand-indigo"></i> Chat summary</p>
+            <p class="text-xs leading-relaxed text-slate-500 dark:text-slate-400 mb-3">Team agreed on the
+              indigo/purple/blue palette, 12px card radius, and subtle light-mode shadows. Skeleton loaders are pushed
+              for review; meeting moved to 11:15.</p>
+            <button
+              class="w-full text-xs font-semibold text-white bg-gradient-to-r from-brand-indigo to-brand-purple py-2 rounded-lg shadow-glow hover:opacity-90 transition">
+              <i class="fa-solid fa-arrows-rotate mr-1"></i> Generate new summary
+            </button>
+          </div>
+
+          <!-- Premium Card -->
+          <div class="relative p-4 rounded-2xl bg-slate-900 dark:bg-black overflow-hidden">
+            <div class="absolute -top-10 -right-10 w-32 h-32 bg-amber-500/20 rounded-full blur-2xl"></div>
+            <span
+              class="inline-flex items-center gap-1 text-[10px] font-bold text-amber-400 bg-amber-400/10 px-2 py-1 rounded-md mb-3"><i
+                class="fa-solid fa-crown"></i> PREMIUM</span>
+            <ul class="space-y-2 mb-4">
+              <li class="flex items-center gap-2 text-xs text-slate-200"><i
+                  class="fa-solid fa-circle-check text-emerald-400"></i> Unlimited AI messages</li>
+              <li class="flex items-center gap-2 text-xs text-slate-200"><i
+                  class="fa-solid fa-circle-check text-emerald-400"></i> Instant chat summaries</li>
+              <li class="flex items-center gap-2 text-xs text-slate-200"><i
+                  class="fa-solid fa-circle-check text-emerald-400"></i> Priority support</li>
+            </ul>
+            <button onclick="openModal('payment-modal')"
+              class="w-full text-xs font-semibold text-slate-900 bg-gradient-to-r from-amber-400 to-amber-300 py-2.5 rounded-lg hover:opacity-90 transition flex items-center justify-center gap-1.5">
+              <i class="fa-solid fa-bolt"></i> Upgrade via Razorpay — ₹299/mo
+            </button>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- 4. PAYMENT SUCCESS MODAL -->
+  <!-- ============================================================ -->
+  <div id="payment-modal"
+    class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+    <div class="glass rounded-3xl shadow-2xl p-8 max-w-sm w-full text-center fade-up">
+      <div
+        class="w-20 h-20 mx-auto rounded-full bg-emerald-100 dark:bg-emerald-500/10 flex items-center justify-center mb-5">
+        <div class="w-14 h-14 rounded-full bg-emerald-500 flex items-center justify-center shadow-lg">
+          <i class="fa-solid fa-check text-white text-2xl"></i>
+        </div>
+      </div>
+      <h3 class="font-display text-xl font-bold">Payment Successful</h3>
+      <p class="text-sm text-slate-500 dark:text-slate-400 mt-2">₹299 charged via Razorpay.</p>
+      <div
+        class="mt-4 inline-flex items-center gap-1.5 text-xs font-bold text-amber-600 bg-amber-50 dark:bg-amber-500/10 px-3 py-1.5 rounded-full">
+        <i class="fa-solid fa-crown"></i> Premium Activated
+      </div>
+      <button onclick="closeModal('payment-modal')"
+        class="w-full mt-6 bg-gradient-to-r from-brand-indigo to-brand-purple text-white font-semibold py-3 rounded-xl shadow-glow hover:opacity-90 transition active:scale-[0.98]">
+        Continue
+      </button>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- 5. EMPTY CHAT STATE -->
+  <!-- ============================================================ -->
+  <section id="page-empty"
+    class="page-section min-h-screen w-full bg-surface dark:bg-slate-950 items-center justify-center p-6">
+    <div class="text-center max-w-sm">
+      <div class="relative w-40 h-40 mx-auto mb-6">
+        <div class="absolute inset-0 bg-gradient-to-br from-brand-indigo/20 to-brand-purple/20 rounded-full blur-2xl">
+        </div>
+        <div
+          class="relative w-40 h-40 rounded-3xl bg-white dark:bg-slate-900 shadow-card flex items-center justify-center animate-float">
+          <i class="fa-solid fa-robot text-6xl grad-text"></i>
+        </div>
+      </div>
+      <h2 class="font-display text-xl font-bold">Start your first conversation</h2>
+      <p class="text-sm text-slate-500 dark:text-slate-400 mt-2">Bring your team and your AI assistant into one place —
+        messages, files and summaries all in sync.</p>
+      <button onclick="goTo('dashboard')"
+        class="mt-6 inline-flex items-center gap-2 bg-gradient-to-r from-brand-indigo to-brand-purple text-white font-semibold px-6 py-3 rounded-xl shadow-glow hover:opacity-90 transition active:scale-[0.98]">
+        <i class="fa-solid fa-plus"></i> New Chat
+      </button>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- 6. LOADING STATE -->
+  <!-- ============================================================ -->
+  <section id="page-loading" class="page-section min-h-screen w-full bg-surface dark:bg-slate-950">
+    <div class="flex h-screen w-full overflow-hidden">
+      <aside
+        class="hidden lg:flex flex-col w-72 shrink-0 bg-white/80 dark:bg-slate-900/80 border-r border-slate-200/70 dark:border-slate-800 p-5 space-y-4">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-xl skeleton"></div>
+          <div class="h-4 w-24 rounded skeleton"></div>
+        </div>
+        <div class="h-14 rounded-xl skeleton mt-4"></div>
+        <div class="space-y-2.5 mt-4">
+          <div class="h-9 rounded-xl skeleton"></div>
+          <div class="h-9 rounded-xl skeleton"></div>
+          <div class="h-9 rounded-xl skeleton"></div>
+          <div class="h-9 rounded-xl skeleton"></div>
+        </div>
+      </aside>
+      <div class="flex-1 flex flex-col">
+        <div class="h-16 shrink-0 border-b border-slate-200/70 dark:border-slate-800 flex items-center px-6 gap-3">
+          <div class="w-9 h-9 rounded-full skeleton"></div>
+          <div class="h-4 w-40 rounded skeleton"></div>
+        </div>
+        <div class="flex-1 p-8 space-y-6">
+          <div class="flex gap-3">
+            <div class="w-9 h-9 rounded-full skeleton shrink-0"></div>
+            <div class="space-y-2 flex-1 max-w-md">
+              <div class="h-3 w-20 rounded skeleton"></div>
+              <div class="h-14 rounded-2xl skeleton"></div>
+            </div>
+          </div>
+          <div class="flex gap-3 flex-row-reverse">
+            <div class="w-9 h-9 rounded-full skeleton shrink-0"></div>
+            <div class="space-y-2 flex-1 max-w-md items-end flex flex-col">
+              <div class="h-3 w-20 rounded skeleton"></div>
+              <div class="h-10 w-3/4 rounded-2xl skeleton"></div>
+            </div>
+          </div>
+          <div class="flex gap-3">
+            <div class="w-9 h-9 rounded-full skeleton shrink-0"></div>
+            <div class="space-y-2 flex-1 max-w-md">
+              <div class="h-3 w-20 rounded skeleton"></div>
+              <div class="h-20 rounded-2xl skeleton"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <button onclick="goTo('dashboard')"
+      class="fixed bottom-6 right-6 text-xs font-semibold text-white bg-slate-800 px-4 py-2 rounded-full shadow-lg">Skip
+      to dashboard →</button>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- 7. 404 STATE -->
+  <!-- ============================================================ -->
+  <section id="page-notfound"
+    class="page-section min-h-screen w-full bg-surface dark:bg-slate-950 items-center justify-center p-6">
+    <div class="text-center max-w-sm">
+      <div class="relative w-40 h-40 mx-auto mb-6">
+        <div class="absolute inset-0 bg-gradient-to-br from-red-400/20 to-brand-purple/20 rounded-full blur-2xl"></div>
+        <div
+          class="relative w-40 h-40 rounded-3xl bg-white dark:bg-slate-900 shadow-card flex items-center justify-center animate-float">
+          <i class="fa-solid fa-robot text-6xl text-slate-300 dark:text-slate-600"></i>
+          <span
+            class="absolute -bottom-2 bg-red-500 text-white text-[11px] font-bold px-2.5 py-1 rounded-full">404</span>
+        </div>
+      </div>
+      <h2 class="font-display text-xl font-bold">This conversation wandered off</h2>
+      <p class="text-sm text-slate-500 dark:text-slate-400 mt-2">The page you're looking for doesn't exist or may have
+        been moved.</p>
+      <button onclick="goTo('dashboard')"
+        class="mt-6 inline-flex items-center gap-2 bg-gradient-to-r from-brand-indigo to-brand-purple text-white font-semibold px-6 py-3 rounded-xl shadow-glow hover:opacity-90 transition active:scale-[0.98]">
+        <i class="fa-solid fa-house"></i> Go Home
+      </button>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- GLOBAL FOOTER (dashboard states only) -->
+  <!-- ============================================================ -->
+  <footer id="global-footer"
+    class="hidden fixed bottom-0 left-0 right-0 z-10 text-[11px] text-slate-400 bg-white/70 dark:bg-slate-900/70 backdrop-blur-md border-t border-slate-200/70 dark:border-slate-800 px-4 py-1.5 items-center justify-between">
+    <span>Ai Chat v2.4.0</span>
+    <div class="flex items-center gap-4">
+      <a href="#" class="hover:text-brand-indigo transition">Privacy</a>
+      <a href="#" class="hover:text-brand-indigo transition">Terms</a>
+      <a href="#" class="hover:text-brand-indigo transition"><i class="fa-brands fa-github"></i> GitHub</a>
+    </div>
+  </footer>
+
+  <script>
+    function goTo(page) {
+      document.querySelectorAll('.page-section').forEach(el => el.classList.remove('active'));
+      document.getElementById('page-' + page).classList.add('active');
+      const footer = document.getElementById('global-footer');
+      footer.classList.toggle('hidden', page === 'login');
+      footer.classList.toggle('flex', page !== 'login');
+      window.scrollTo(0, 0);
+    }
+    function toggleDark() {
+      document.documentElement.classList.toggle('dark');
+    }
+    function openModal(id) {
+      const m = document.getElementById(id);
+      m.classList.remove('hidden');
+      m.classList.add('flex');
+    }
+    function closeModal(id) {
+      const m = document.getElementById(id);
+      m.classList.add('hidden');
+      m.classList.remove('flex');
+    }
+    function toggleAiPanel() {
+      const panel = document.getElementById('ai-panel');
+      panel.classList.toggle('hidden');
+      panel.classList.toggle('flex');
+      panel.classList.toggle('fixed');
+      panel.classList.toggle('inset-y-0');
+      panel.classList.toggle('right-0');
+      panel.classList.toggle('z-40');
+    }
+  </script>
+</body>
+
+</html>
