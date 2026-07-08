@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Script from "next/script";
 import type { ReactNode } from "react";
 import "@/app/globals.css";
+import { RenderColdStartLoader } from "@/components/common/render-cold-start-loader";
 
 export const metadata: Metadata = {
   title: "Ai Chat",
@@ -10,7 +11,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
   return (
-    <html lang="en" className="scroll-smooth dark">
+    <html lang="en" className="scroll-smooth dark" suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -23,7 +24,8 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
         />
       </head>
-      <body className="font-body bg-surface text-slate-800 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100">
+      <body className="font-body bg-surface text-slate-800 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100" suppressHydrationWarning>
+        <RenderColdStartLoader />
         {children}
         <Script src="https://accounts.google.com/gsi/client" strategy="afterInteractive" />
         <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="afterInteractive" />
