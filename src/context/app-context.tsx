@@ -63,7 +63,7 @@ export function AppContextProvider({
   const [paymentModalVariant, setPaymentModalVariant] = useState<PaymentModalVariant>("success");
 
   useEffect(() => {
-    const storedTheme = window.localStorage.getItem("nexus-theme");
+    const storedTheme = window.localStorage.getItem(" -theme");
     const shouldEnableDark = storedTheme ? storedTheme === "dark" : true;
     document.documentElement.classList.toggle("dark", shouldEnableDark);
     setIsDark(shouldEnableDark);
@@ -84,7 +84,7 @@ export function AppContextProvider({
     setIsDark((current) => {
       const nextValue = !current;
       document.documentElement.classList.toggle("dark", nextValue);
-      window.localStorage.setItem("nexus-theme", nextValue ? "dark" : "light");
+      window.localStorage.setItem(" -theme", nextValue ? "dark" : "light");
       return nextValue;
     });
   };

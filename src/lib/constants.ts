@@ -3,7 +3,7 @@ import { ChatSummary, Message, SuggestedReply, User } from "@/types";
 export const demoUser: User = {
   _id: "user-1",
   name: "Aarav Mehta",
-  email: "aarav@nexus.ai",
+  email: "aarav@ .ai",
   googleId: "google-1",
   picture: "https://i.pravatar.cc/80?img=32",
   isPremium: true,
@@ -13,7 +13,7 @@ export const demoUser: User = {
 };
 
 export const demoMessages: Message[] = [
-  
+
 ];
 
 export const demoSuggestedReplies: SuggestedReply[] = [];

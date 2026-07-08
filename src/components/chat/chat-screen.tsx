@@ -341,7 +341,7 @@ export function ChatScreen() {
                 <i className="fa-solid fa-sparkles text-sm text-white" />
               </div>
               <span className="font-display text-lg font-bold">
-                Nexus <span className="grad-text">AI</span>
+                <span className="grad-text">AI</span>
               </span>
             </div>
 
@@ -431,8 +431,8 @@ export function ChatScreen() {
               </div>
             </header>
 
-            <main 
-              ref={messagesContainerRef} 
+            <main
+              ref={messagesContainerRef}
               onScroll={handleScroll}
               className="scrollbar-thin flex-1 space-y-5 overflow-y-auto px-4 py-6 lg:px-8"
             >

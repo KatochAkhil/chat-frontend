@@ -1,6 +1,6 @@
-# Nexus AI Chat Frontend (Next.js)
+#   AI Chat Frontend (Next.js)
 
-This folder contains the Next.js Single Page App (SPA) frontend for **Nexus AI Chat**. It handles user logins, real-time message rendering, socket presence/typing displays, and the Razorpay payment checkout process.
+This folder contains the Next.js Single Page App (SPA) frontend for **  AI Chat**. It handles user logins, real-time message rendering, socket presence/typing displays, and the Razorpay payment checkout process.
 
 ---
 

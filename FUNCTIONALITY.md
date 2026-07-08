@@ -1,6 +1,6 @@
 # System Functionality & Architecture Guide
 
-This document explains the technical architecture, operational flow, and implementation details of the key features inside **Nexus AI Chat**.
+This document explains the technical architecture, operational flow, and implementation details of the key features inside **  AI Chat**.
 
 ---
 
@@ -29,7 +29,7 @@ graph TD
 Authentication secures access to rooms, messages, and premium endpoints:
 * **Frontend Sign-In**: The client renders Google's login buttons. Upon completion, the credential token is captured and sent to the backend `/api/auth/google` endpoint.
 * **Backend Verification**: The server verifies the Google ID token, queries/creates the User profile in MongoDB, and issues a JSON Web Token (JWT).
-* **HTTP-Only Cookies**: The JWT is returned via a secure `nexus_access_token` cookie, which prevents XSS leakage and automatically attaches to future HTTP and WebSocket handshakes.
+* **HTTP-Only Cookies**: The JWT is returned via a secure ` _access_token` cookie, which prevents XSS leakage and automatically attaches to future HTTP and WebSocket handshakes.
 
 ---
 

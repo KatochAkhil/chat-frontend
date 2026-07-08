@@ -73,7 +73,7 @@ export function RenderColdStartLoader() {
           setStatusMessage("Connection established! Launching app...");
           clearInterval(checkInterval);
           clearInterval(timerInterval);
-          
+
           // Smoothly hide loader after 1 second of showing success status
           setTimeout(() => {
             if (isMounted) {
@@ -116,7 +116,7 @@ export function RenderColdStartLoader() {
 
       {/* Main Card with Glassmorphism */}
       <div className="relative max-w-md w-full glass rounded-3xl p-8 shadow-2xl flex flex-col items-center border border-slate-800/50 backdrop-blur-xl">
-        
+
         {/* Glow indicator */}
         <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-24 h-24 bg-indigo-500/20 blur-2xl rounded-full" />
 
@@ -124,10 +124,10 @@ export function RenderColdStartLoader() {
         <div className="relative w-20 h-20 mb-8 flex items-center justify-center">
           {/* Pulsing ring */}
           <div className="absolute inset-0 rounded-full border-2 border-indigo-500/20 animate-ping" />
-          
+
           {/* Inner spin gradient ring */}
           <div className={`w-16 h-16 rounded-full border-4 border-slate-800 border-t-indigo-500 border-r-violet-500 animate-spin ${isReady ? "border-t-emerald-500 border-r-emerald-500" : ""}`} />
-          
+
           {/* Center icon */}
           <div className="absolute">
             {isReady ? (
@@ -143,7 +143,7 @@ export function RenderColdStartLoader() {
           {isReady ? (
             <span className="text-emerald-400">Ready to Go!</span>
           ) : (
-            <span className="grad-text font-extrabold">Nexus AI Chat</span>
+            <span className="grad-text font-extrabold">  AI Chat</span>
           )}
         </h2>
 
