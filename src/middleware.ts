@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 const protectedRoutes = ["/chat", "/empty", "/loading"];
 
 export function middleware(request: NextRequest) {
-  const token = request.cookies.get(" _access_token")?.value;
+  const token = request.cookies.get("_access_token")?.value;
   const { pathname } = request.nextUrl;
 
   if (pathname.startsWith("/auth/login") && token) {

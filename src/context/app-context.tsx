@@ -5,6 +5,7 @@ import type { Dispatch, ReactNode, SetStateAction } from "react";
 import { demoMessages, demoSuggestedReplies, demoSummary } from "@/lib/constants";
 import { apiClient } from "@/services/api-client";
 import type { ChatSummary, Message, OnlineUser, SuggestedReply, User } from "@/types";
+import Cookies from "js-cookie";
 
 type PaymentModalVariant = "success" | "upsell";
 
@@ -90,15 +91,17 @@ export function AppContextProvider({
   };
 
   const loginWithGoogle = async (payload: { credential?: string; accessToken?: string }) => {
-    const response = await apiClient.request<{ user: User }>("/auth/google", {
+    const response = await apiClient.request<{ user: User; token: string }>("/auth/google", {
       method: "POST",
       body: payload
     });
+    Cookies.set("_access_token", response.token, { expires: 7, path: "/" });
     setUser(response.user);
   };
 
   const logout = async () => {
     await apiClient.request("/auth/logout", { method: "POST" });
+    Cookies.remove("_access_token", { path: "/" });
     setUser(null);
   };
 
@@ -130,7 +133,7 @@ export function AppContextProvider({
         color: "#6366F1"
       },
       handler: async (paymentResponse: { razorpay_order_id: string; razorpay_payment_id: string; razorpay_signature: string }) => {
-        const verifyResponse = await apiClient.request<{ user: User }>("/payments/verify", {
+        const verifyResponse = await apiClient.request<{ user: User; token: string }>("/payments/verify", {
           method: "POST",
           body: {
             orderId: paymentResponse.razorpay_order_id,
@@ -138,6 +141,7 @@ export function AppContextProvider({
             signature: paymentResponse.razorpay_signature
           }
         });
+        Cookies.set("_access_token", verifyResponse.token, { expires: 7, path: "/" });
         setUser(verifyResponse.user);
         setPaymentModalVariant("success");
         setIsPaymentModalOpen(true);
